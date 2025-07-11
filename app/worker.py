@@ -30,7 +30,6 @@ def process_chat_request(chat_data):
             timeout=30
         )
         if response.status_code == 200:
-            # Collect the full response from stream
             full_response = ""
             for line in response.iter_lines():
                 if line:
