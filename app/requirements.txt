@@ -3,4 +3,4 @@ uvicorn
 pymongo
 pika
 requests
-d
+json
