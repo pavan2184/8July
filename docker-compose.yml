@@ -1,0 +1,59 @@
+
+services:
+  fastapi:
+    build: .
+    container_name: fastapi_app
+    volumes:
+      - ./app:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+      - mongo
+      - ollama  
+
+  worker:
+    build: .
+    container_name: worker_app
+    command: ["python", "worker.py"]
+    volumes:
+      - ./app:/app
+    depends_on:
+      - rabbitmq
+      - mongo
+      - ollama  
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama:/root/.ollama  
+      - ./Modelfile:/Modelfile  
+    entrypoint: >
+      sh -c "ollama serve &
+             sleep 5 &&
+             ollama create medical-mistral -f /Modelfile &&
+             tail -f /dev/null"
+
+volumes:
+  mongo_data:
